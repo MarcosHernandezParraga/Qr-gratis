@@ -4,7 +4,7 @@
 Pega tu enlace, elige un dibujo (o ninguno) y copia o descarga tu QR en alta calidad.
 Sin registro, sin marcas de agua, sin anuncios.
 
-🔗 **Web:** https://marcoshernandezparraga.github.io/qr-gratis/
+🔗 **Web:** https://marcoshernandezparraga.github.io/Qr-gratis/
 
 ## Qué hace
 
