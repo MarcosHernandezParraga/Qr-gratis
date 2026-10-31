@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://TU-USUARIO.github.io/qr-gratis/sitemap.xml
+Sitemap: https://marcoshernandezparraga.github.io/Qr-gratis/
