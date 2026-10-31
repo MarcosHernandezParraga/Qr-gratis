@@ -1,0 +1,16 @@
+{
+  "name": "qr-gratis",
+  "version": "1.0.0",
+  "description": "Generador de códigos QR gratis, con modelos originales. Sin registro y sin marcas de agua.",
+  "private": true,
+  "license": "MIT",
+  "author": "Marcos Hernández Párraga",
+  "scripts": {
+    "build": "python3 build.py"
+  },
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/figtree": "^5.3.0",
+    "qrcode-generator": "2.0.4"
+  }
+}

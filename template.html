@@ -1,0 +1,493 @@
+<title>QR Gratis</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!--HEAD-->
+<style>
+/*FONTS*/
+/* Concepto: un cielo de verano muy suave. Las nubes pasan despacio por detrás, los paneles son blancos
+   y lo único con color intenso son los dibujos y los colores del QR. Todo salta un poco al pasar el ratón. */
+:root {
+  --sky-top: #b9ddf8;
+  --sky-mid: #d6ecfc;
+  --sky-bottom: #eef7fe;
+  --cloud: #ffffff;
+  --cloud-o: .55;
+  --bg: #eef7fe;
+  --surface: #ffffff;
+  --surface-2: #f0f7fd;
+  --panel: rgba(255, 255, 255, .78);
+  --fg: #0f2540;
+  --muted: #4a6079;
+  --line: #cfe1f2;
+  --accent: #1d6fdc;
+  --accent-2: #0f55b8;
+  --accent-fg: #ffffff;
+  --accent-soft: #d3e6fb;
+  --heart: #ff6b81;
+  --danger: #b42318;
+  --warn-bg: #fff3d6;
+  --warn-fg: #6b4700;
+  --tip-bg: #e4f1ff;
+  --chk1: #dfeaf6;
+  --chk2: #f7fbff;
+  --shadow: 0 1px 2px rgba(15, 37, 64, .07), 0 14px 32px -18px rgba(15, 37, 64, .32);
+  --shadow-up: 0 2px 4px rgba(15, 37, 64, .08), 0 26px 44px -16px rgba(15, 37, 64, .42);
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+  --f-display: 'Bricolage Grotesque', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+  --f-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sky-top: #0b1730; --sky-mid: #10213f; --sky-bottom: #14284c; --cloud: #8fb2e6; --cloud-o: .12;
+    --bg: #14284c; --surface: #172540; --surface-2: #1e2f50; --panel: rgba(18, 31, 56, .82); --fg: #eaf2ff; --muted: #a9bad4; --line: #2c4166;
+    --accent: #6db3ff; --accent-2: #8cc4ff; --accent-fg: #06182f; --accent-soft: #1d3f6e; --danger: #ff9b8f;
+    --warn-bg: #3a2c0b; --warn-fg: #ffd98a; --tip-bg: #1a3358; --chk1: #243756; --chk2: #1b2b47;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 14px 32px -18px rgba(0, 0, 0, .75);
+    --shadow-up: 0 2px 4px rgba(0, 0, 0, .45), 0 26px 44px -16px rgba(0, 0, 0, .85);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --sky-top: #0b1730; --sky-mid: #10213f; --sky-bottom: #14284c; --cloud: #8fb2e6; --cloud-o: .12;
+  --bg: #14284c; --surface: #172540; --surface-2: #1e2f50; --panel: rgba(18, 31, 56, .82); --fg: #eaf2ff; --muted: #a9bad4; --line: #2c4166;
+  --accent: #6db3ff; --accent-2: #8cc4ff; --accent-fg: #06182f; --accent-soft: #1d3f6e; --danger: #ff9b8f;
+  --warn-bg: #3a2c0b; --warn-fg: #ffd98a; --tip-bg: #1a3358; --chk1: #243756; --chk2: #1b2b47;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 14px 32px -18px rgba(0, 0, 0, .75);
+  --shadow-up: 0 2px 4px rgba(0, 0, 0, .45), 0 26px 44px -16px rgba(0, 0, 0, .85);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--accent-2); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- cielo con nubes ---------- */
+.sky { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 40%, var(--sky-bottom) 100%); }
+.cloud { position: absolute; left: -340px; top: var(--y); width: var(--w); height: calc(var(--w) * .3); border-radius: 999px; background: var(--cloud); opacity: var(--cloud-o); animation: drift var(--t) linear infinite; animation-delay: var(--d); will-change: transform; }
+.cloud::before, .cloud::after { content: ''; position: absolute; background: var(--cloud); border-radius: 50%; }
+.cloud::before { width: 38%; height: 150%; left: 14%; bottom: 28%; }
+.cloud::after { width: 28%; height: 115%; left: 46%; bottom: 30%; }
+@keyframes drift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(calc(100vw + 700px), 0, 0); } }
+
+.app {
+  position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding-block: 18px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ---------- cabecera ---------- */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; padding-block: 2px 16px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 800; font-size: 27px; letter-spacing: -.02em; color: var(--fg); text-decoration: none; }
+.brand svg { width: 36px; height: 36px; transition: transform .45s var(--spring); }
+.brand:hover svg { transform: rotate(-12deg) scale(1.14); }
+.by {
+  display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 8px 16px 8px 12px; border-radius: 999px;
+  background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow); font-size: 14.5px; color: var(--muted);
+  transition: transform .3s var(--spring), box-shadow .3s ease;
+}
+.by:hover { transform: translateY(-3px) scale(1.02); box-shadow: var(--shadow-up); }
+.by b { color: var(--fg); font-weight: 700; }
+.by svg { width: 18px; height: 18px; flex: none; }
+
+/* ---------- portada ---------- */
+.hero { text-align: center; display: grid; justify-items: center; gap: 12px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 7px 16px 7px 12px; border-radius: 999px;
+  background: var(--panel); border: 1px solid var(--line); font-size: 14.5px; font-weight: 700; color: var(--fg);
+}
+.badge svg { width: 18px; height: 18px; flex: none; }
+h1 {
+  font-family: var(--f-display); font-weight: 800; font-size: clamp(30px, 4.5vw, 50px); line-height: 1.05;
+  letter-spacing: -.03em; margin: 0; max-width: 25ch; text-wrap: balance;
+}
+.lead { margin: 0; color: var(--muted); font-size: clamp(16.5px, 2.2vw, 20px); max-width: 52ch; text-wrap: balance; }
+
+.entry { display: grid; gap: 8px; margin: 20px auto 26px; max-width: 760px; }
+.entry label { font-weight: 700; font-size: 15px; }
+.field { position: relative; }
+.field input {
+  width: 100%; height: 64px; padding: 0 58px 0 22px; font-size: 18px;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 20px; box-shadow: var(--shadow);
+  transition: transform .3s var(--spring), box-shadow .2s ease, border-color .2s ease;
+}
+.field input:hover { transform: translateY(-2px); box-shadow: var(--shadow-up); }
+.field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
+.field input::placeholder { color: var(--muted); opacity: .8; }
+.clear {
+  position: absolute; right: 11px; top: 50%; transform: translateY(-50%); width: 42px; height: 42px;
+  border-radius: 13px; border: 0; background: var(--surface-2); color: var(--muted); font-size: 22px; line-height: 1;
+  transition: transform .25s var(--spring), color .15s ease;
+}
+.clear:hover { color: var(--fg); transform: translateY(-50%) scale(1.12) rotate(90deg); }
+.meta { display: flex; gap: 8px; align-items: baseline; font-size: 13px; color: var(--muted); min-width: 0; justify-content: center; }
+.meta code { font-family: var(--f-mono); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg); }
+.hint { margin: 0; padding: 10px 14px; border-radius: 14px; font-size: 14px; background: var(--panel); color: var(--muted); border: 1px solid var(--line); }
+.hint.warn { background: var(--warn-bg); color: var(--warn-fg); border-color: transparent; }
+.hint.err { color: var(--danger); font-weight: 600; }
+
+/* ---------- zona de trabajo ---------- */
+.work { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 410px); gap: 28px; align-items: start; }
+.result { grid-column: 2; grid-row: 1; position: sticky; top: 14px; max-height: calc(100vh - 28px); max-height: calc(100dvh - 28px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; border-radius: 28px; }
+.picker { grid-column: 1; grid-row: 1; min-width: 0; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 28px; padding: 16px; box-shadow: var(--shadow); }
+.stage { aspect-ratio: 1 / 1; max-width: 100%; border-radius: 20px; overflow: hidden; background: var(--surface-2); border: 1px solid var(--line); }
+.stage img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.stage.checker { background-image: conic-gradient(var(--chk1) 25%, var(--chk2) 0 50%, var(--chk1) 0 75%, var(--chk2) 0); background-size: 22px 22px; }
+.stage.pop img { animation: pop .5s var(--spring); }
+@keyframes pop { 0% { transform: scale(.86) rotate(-2deg); opacity: .4; } 60% { transform: scale(1.04) rotate(.6deg); opacity: 1; } 100% { transform: none; } }
+
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.btn {
+  min-height: 52px; padding: 0 16px; border-radius: 16px; border: 1px solid var(--line);
+  background: var(--surface-2); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: transform .28s var(--spring), box-shadow .2s ease, background .15s ease;
+}
+.btn svg { width: 19px; height: 19px; flex: none; }
+.btn:hover:not(:disabled) { transform: translateY(-4px) scale(1.02); box-shadow: var(--shadow-up); background: var(--surface); }
+.btn:active:not(:disabled) { transform: translateY(0) scale(.98); box-shadow: var(--shadow); }
+.btn.primary { grid-column: 1 / -1; background: var(--accent); color: var(--accent-fg); border-color: transparent; font-size: 17.5px; min-height: 56px; box-shadow: 0 10px 22px -10px var(--accent); }
+.btn.primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.07); box-shadow: 0 18px 28px -12px var(--accent); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.tip {
+  display: flex; gap: 10px; align-items: flex-start; margin: 14px 0 0; padding: 12px 14px; border-radius: 16px;
+  background: var(--tip-bg); font-size: 14px; line-height: 1.45; color: var(--fg);
+}
+.tip svg { width: 22px; height: 22px; flex: none; margin-top: 1px; }
+.tip b { font-weight: 700; }
+
+.opts { display: grid; gap: 14px; margin-top: 16px; }
+fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+legend { padding: 0; font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.seg label { position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.seg span {
+  display: block; text-align: center; padding: 10px 4px; border-radius: 13px; font-size: 14px; font-weight: 600;
+  background: var(--surface-2); border: 1px solid var(--line); color: var(--muted);
+  transition: transform .25s var(--spring), box-shadow .2s ease, background .15s ease, color .15s ease;
+}
+.seg label:hover span { transform: translateY(-3px) scale(1.04); box-shadow: var(--shadow); color: var(--fg); }
+.seg input:checked + span { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.seg input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+.check { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: transform .25s var(--spring); width: fit-content; }
+.check:hover { transform: translateX(3px); }
+.check input { width: 21px; height: 21px; accent-color: var(--accent); }
+.small { margin: -6px 0 0 31px; font-size: 12.5px; color: var(--muted); }
+.msg { min-height: 22px; margin: 12px 2px 0; font-size: 14px; color: var(--muted); }
+.msg.err { color: var(--danger); font-weight: 600; }
+.vnote { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); color: var(--muted); font-size: 13px; }
+
+/* ---------- modelos ---------- */
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 28px; padding: 22px; box-shadow: var(--shadow); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.picker h2, .how h2, .faq h2 { font-family: var(--f-display); font-weight: 800; font-size: 28px; letter-spacing: -.02em; margin: 0 0 2px; }
+.picker .sub { margin: 0; color: var(--muted); font-size: 15px; }
+.tools { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.search { position: relative; flex: 1 1 220px; min-width: 0; }
+.search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 19px; height: 19px; color: var(--muted); pointer-events: none; }
+.search input {
+  width: 100%; height: 48px; padding: 0 14px 0 42px; font-size: 15.5px; background: var(--surface); border: 2px solid var(--line); border-radius: 15px;
+  transition: transform .25s var(--spring), border-color .2s ease, box-shadow .2s ease;
+}
+.search input:hover { transform: translateY(-2px); }
+.search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.rnd {
+  height: 48px; padding: 0 18px; border-radius: 15px; border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700;
+  display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px -10px var(--accent); transition: transform .28s var(--spring), filter .15s ease;
+}
+.rnd svg { width: 19px; height: 19px; transition: transform .5s var(--spring); }
+.rnd:hover { transform: translateY(-4px) scale(1.04); filter: brightness(1.08); }
+.rnd:hover svg { transform: rotate(180deg) scale(1.15); }
+.rnd:active { transform: scale(.96); }
+
+.row-label { margin: 16px 0 8px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--line); font-size: 14px; font-weight: 600;
+  transition: transform .26s var(--spring), box-shadow .2s ease, background .15s ease;
+}
+.chip:hover { transform: translateY(-4px) scale(1.06); box-shadow: var(--shadow-up); }
+.chip:active { transform: scale(.96); }
+.chip .dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid; margin-left: -6px; }
+.chip.col { padding-left: 14px; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip.col[aria-pressed="true"] { background: var(--surface); color: var(--fg); border-color: var(--fg); box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 4px var(--fg); }
+.chips.off .chip.col { opacity: .45; }
+.pnote { margin: 8px 2px 0; font-size: 13px; color: var(--muted); }
+
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 12px; list-style: none; padding: 0; margin: 18px 0 0; perspective: 900px; }
+.gallery li[hidden] { display: none; }
+.thumb {
+  position: relative; display: flex; flex-direction: column; gap: 7px; width: 100%; padding: 6px 6px 10px; text-align: center;
+  background: var(--surface); border: 2px solid transparent; border-radius: 22px; box-shadow: var(--shadow);
+  transform-origin: 50% 85%; transition: transform .32s var(--spring), box-shadow .25s ease, border-color .15s ease;
+}
+.thumb:hover { transform: translateY(-10px) rotateX(10deg) scale(1.06); box-shadow: var(--shadow-up); }
+.thumb:active { transform: translateY(-2px) scale(.97); }
+.thumb .art { display: block; border-radius: 16px; overflow: hidden; aspect-ratio: 1 / 1; border: 1px solid var(--line); background: #fff; }
+.thumb .art svg { display: block; width: 100%; height: 100%; transition: transform .4s var(--spring); }
+.thumb:hover .art svg { transform: scale(1.08) rotate(-1.5deg); }
+.thumb .lbl { font-size: 12.5px; font-weight: 700; line-height: 1.2; }
+.thumb[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow); }
+.thumb[aria-pressed="true"]::after {
+  content: ''; position: absolute; top: -7px; right: -7px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 15px no-repeat;
+  box-shadow: 0 4px 10px -2px rgba(15, 37, 64, .4); animation: badge .4s var(--spring);
+}
+@keyframes badge { from { transform: scale(0); } to { transform: scale(1); } }
+.empty { margin: 22px 0 6px; text-align: center; color: var(--muted); }
+
+/* ---------- cómo funciona y preguntas ---------- */
+.how { margin-top: 56px; }
+.steps { list-style: none; counter-reset: s; padding: 0; margin: 16px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.steps li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 18px 18px 18px 18px; box-shadow: var(--shadow); transition: transform .3s var(--spring), box-shadow .2s ease; }
+.steps li:hover { transform: translateY(-6px); box-shadow: var(--shadow-up); }
+.steps li::before { content: counter(s); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-fg); font-family: var(--f-display); font-weight: 800; margin-bottom: 10px; }
+.steps b { display: block; font-size: 16.5px; margin-bottom: 2px; }
+.steps span { color: var(--muted); font-size: 14.5px; }
+
+.faq { margin-top: 56px; max-width: 820px; }
+.faq h2 { margin-bottom: 14px; }
+.faq details { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; margin-bottom: 10px; box-shadow: var(--shadow); transition: transform .25s var(--spring); }
+.faq details:hover { transform: translateY(-2px); }
+.faq summary { list-style: none; cursor: pointer; padding: 16px 48px 16px 18px; font-weight: 700; position: relative; border-radius: 18px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: '+'; position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 24px; font-weight: 500; color: var(--muted); transition: transform .3s var(--spring); }
+.faq details[open] summary::after { content: '–'; }
+.faq details p { margin: 0; padding: 0 18px 16px; color: var(--muted); max-width: 66ch; }
+.faq details p + p { margin-top: -6px; }
+.faq details p b { color: var(--fg); }
+
+/* ---------- pie ---------- */
+.foot { margin-top: 56px; padding: 22px 4px 4px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13.5px; display: grid; gap: 8px; text-align: center; justify-items: center; }
+.foot p { margin: 0; max-width: 78ch; }
+.foot .who { color: var(--fg); font-size: 14.5px; }
+.foot .who b { font-weight: 700; }
+.foot small { font-size: 12.5px; opacity: .85; }
+.foot .fine { font-size: 12.5px; opacity: .85; }
+
+@media (max-width: 900px) {
+  .work { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .result, .picker { grid-column: 1; grid-row: auto; }
+  .result { position: static; max-height: none; overflow: visible; max-width: 470px; margin-inline: auto; width: 100%; }
+  .steps { grid-template-columns: minmax(0, 1fr); }
+  .top { justify-content: center; text-align: center; }
+}
+@media (max-width: 520px) {
+  .panel { padding: 16px; border-radius: 24px; }
+  .gallery { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
+  .thumb { padding: 5px 5px 8px; border-radius: 18px; }
+  .thumb .lbl { font-size: 11.5px; }
+  .chips.scroll { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding: 4px 16px 10px; scrollbar-width: none; }
+  .chips.scroll::-webkit-scrollbar { display: none; }
+  .chips.scroll .chip { flex: none; }
+  .chip { padding: 6px 11px; font-size: 13px; }
+  .chip .dot { width: 18px; height: 18px; }
+  .btn { font-size: 14.5px; padding: 0 8px; gap: 6px; }
+  .btn.primary { font-size: 16.5px; }
+  .rnd { width: 100%; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  .cloud { left: var(--rx, 20%); }
+}
+</style>
+<!--/HEAD-->
+
+<div class="sky" aria-hidden="true">
+  <i class="cloud" style="--y:7%;--w:230px;--t:95s;--d:-12s;--rx:12%"></i>
+  <i class="cloud" style="--y:24%;--w:220px;--t:130s;--d:-80s;--rx:64%"></i>
+  <i class="cloud" style="--y:46%;--w:260px;--t:160s;--d:-40s;--rx:30%"></i>
+  <i class="cloud" style="--y:68%;--w:250px;--t:115s;--d:-95s;--rx:72%"></i>
+  <i class="cloud" style="--y:86%;--w:250px;--t:175s;--d:-20s;--rx:8%"></i>
+</div>
+
+<div class="app">
+  <header class="top">
+    <a class="brand" href="./" aria-label="QR Gratis, inicio">
+      <svg viewBox="0 0 36 36" aria-hidden="true">
+        <rect x="2" y="2" width="13" height="13" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>
+        <rect x="21" y="2" width="13" height="13" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>
+        <rect x="2" y="21" width="13" height="13" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>
+        <rect x="6.5" y="6.5" width="4" height="4" rx="1.2" fill="currentColor"/>
+        <rect x="25.5" y="6.5" width="4" height="4" rx="1.2" fill="currentColor"/>
+        <rect x="6.5" y="25.5" width="4" height="4" rx="1.2" fill="currentColor"/>
+        <path d="M27.5 34 C19 28.6 21.2 23 24.4 23 C26.2 23 27.1 24 27.5 24.9 C27.9 24 28.8 23 30.6 23 C33.8 23 36 28.6 27.5 34 Z" fill="var(--heart)"/>
+      </svg>
+      QR Gratis
+    </a>
+    <p class="by">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 C3 15 3.6 8.4 7.6 8.4 C9.7 8.4 11.2 9.6 12 11 C12.8 9.6 14.3 8.4 16.4 8.4 C20.4 8.4 21 15 12 21 Z" fill="var(--heart)"/></svg>
+      <span>Hecho por <b>Marcos Hernández Párraga</b></span>
+    </p>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="badge">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#2fa77a"/><path d="M6.5 12.5l4 4 7-8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Gratis · sin registro · sin marcas de agua
+      </p>
+      <h1>Generador de códigos QR gratis, con modelos originales</h1>
+      <p class="lead">Pega tu enlace, elige un dibujo y copia o descarga tu QR en alta calidad.</p>
+    </section>
+
+    <section class="entry" aria-label="Tu enlace">
+      <label for="url">Tu enlace</label>
+      <div class="field">
+        <input id="url" type="text" inputmode="url" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Pega aquí tu enlace, por ejemplo https://tu-enlace.com">
+        <button id="clear" class="clear" type="button" aria-label="Borrar enlace" hidden>×</button>
+      </div>
+      <div class="meta"><span>Se codifica:</span><code id="encoded"></code></div>
+      <p id="hint" class="hint" role="status" hidden></p>
+    </section>
+
+    <div class="work">
+      <section id="result" class="result" aria-label="Tu código QR">
+        <div class="card">
+          <div id="stage" class="stage"><img id="preview" alt="Vista previa del código QR" width="600" height="600"></div>
+          <div class="actions">
+            <button id="btnCopy" class="btn primary" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="3"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+              Copiar imagen
+            </button>
+            <button id="btnPng" class="btn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>
+              Descargar PNG
+            </button>
+            <button id="btnSvg" class="btn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>
+              Descargar SVG
+            </button>
+          </div>
+          <p class="tip" id="svgTip">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a6.5 6.5 0 0 0-3.7 11.9c.7.5 1.2 1.3 1.2 2.1V17h5v-.5c0-.8.5-1.6 1.2-2.1A6.5 6.5 0 0 0 12 2.5z" fill="#ffd24d" stroke="#e0a800" stroke-width="1.4"/><path d="M9.5 20h5M10.3 22h3.4" stroke="#6b7a90" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span><b>¿Es para un cartel o para imprimir?</b> Descarga el <b>SVG</b>: se amplía a cualquier tamaño sin perder nitidez. Es lo mejor para carteles, pósters, lonas y la imprenta.</span>
+          </p>
+          <div class="opts">
+            <fieldset>
+              <legend>Tamaño del PNG</legend>
+              <div class="seg">
+                <label><input type="radio" name="px" value="512"><span>512 px</span></label>
+                <label><input type="radio" name="px" value="1024" checked><span>1024 px</span></label>
+                <label><input type="radio" name="px" value="2048"><span>2048 px</span></label>
+                <label><input type="radio" name="px" value="4096"><span>4096 px</span></label>
+              </div>
+            </fieldset>
+            <label class="check"><input id="transparent" type="checkbox"> Fondo transparente</label>
+            <p class="small" id="trNote" hidden>El cuadro blanco donde va el código se mantiene, para que siempre se lea bien.</p>
+          </div>
+          <p id="shapeNote" class="hint warn" role="status" style="margin-top:12px" hidden></p>
+          <p id="msg" class="msg" role="status" aria-live="polite"></p>
+          <p id="viewerNote" class="vnote" hidden>Vista previa: aquí las descargas están bloqueadas. «Copiar imagen» sí funciona. Cuando la página esté publicada en tu web, también descargará.</p>
+        </div>
+      </section>
+
+      <section class="picker panel" aria-label="Modelos">
+        <h2>Elige un dibujo <span style="font-weight:600;color:var(--muted);font-size:.62em;letter-spacing:0">(es opcional)</span></h2>
+        <p id="count" class="sub"></p>
+
+        <div class="tools">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+            <label for="search" class="sr">Buscar un modelo</label>
+            <input id="search" type="search" autocomplete="off" placeholder="Buscar: café, flores, música…">
+          </div>
+          <button id="btnRandom" class="rnd" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></svg>
+            Sorpréndeme
+          </button>
+        </div>
+
+        <p class="row-label">Tipo de dibujo</p>
+        <div id="cats" class="chips scroll" role="group" aria-label="Categorías"></div>
+
+        <p class="row-label">Color del código</p>
+        <div id="palettes" class="chips" role="group" aria-label="Colores"></div>
+        <p id="palNote" class="pnote" hidden></p>
+
+        <ul id="gallery" class="gallery"></ul>
+        <p id="empty" class="empty" hidden>No hay ningún modelo con esa búsqueda. Prueba con otra palabra, como «flores» o «fiesta».</p>
+      </section>
+    </div>
+
+    <section class="how" aria-labelledby="how-t">
+      <h2 id="how-t">Cómo crear tu código QR gratis</h2>
+      <ol class="steps">
+        <li><b>Pega tu enlace</b><span>Una web, un perfil de Instagram, un menú, un formulario… Lo que quieras.</span></li>
+        <li><b>Elige dibujo y color</b><span>O déjalo en «Sin dibujo» para un QR clásico en blanco y negro.</span></li>
+        <li><b>Copia o descarga</b><span>PNG en cuatro tamaños, o SVG para carteles e imprenta. Sin registro.</span></li>
+      </ol>
+    </section>
+
+    <section class="faq" aria-labelledby="faq-t">
+      <h2 id="faq-t">Preguntas frecuentes</h2>
+      <details>
+        <summary>¿Es gratis? ¿Tengo que registrarme?</summary>
+        <p>Es gratis y no hace falta registrarse. Los códigos no llevan marca de agua y puedes usarlos en tu negocio, en carteles, en tarjetas, en clase o en redes sociales.</p>
+      </details>
+      <details>
+        <summary>¿Qué formato descargo: PNG o SVG?</summary>
+        <p>Para carteles, pósters, lonas, camisetas o cualquier cosa que se imprima, descarga el SVG: se puede ampliar todo lo que quieras sin perder nitidez. Para documentos, presentaciones, redes sociales o WhatsApp, un PNG de 1024 o 2048 píxeles va muy bien.</p>
+      </details>
+      <details>
+        <summary>¿Qué tamaño de PNG elijo?</summary>
+        <p>512 px para webs y mensajes; 1024 px para documentos y redes; 2048 px para imprimir en tamaño pequeño o mediano; 4096 px para impresiones grandes (algunos móviles no pueden crear una imagen tan grande: usa entonces el SVG).</p>
+      </details>
+      <details>
+        <summary>¿Qué es el fondo transparente?</summary>
+        <p>La imagen se guarda sin el fondo blanco, para que puedas ponerla sobre una foto o un color. El cuadro blanco donde va el código se mantiene, porque los móviles necesitan contraste para leerlo.</p>
+      </details>
+      <details>
+        <summary>¿Caduca el código QR?</summary>
+        <p>No. El enlace queda escrito dentro del propio dibujo, así que el QR funcionará mientras siga funcionando la página a la que apunta. No depende de esta web.</p>
+      </details>
+      <details>
+        <summary>¿Se escanean bien los modelos con dibujos?</summary>
+        <p>Sí. El código va siempre sobre un cuadro claro con su margen, igual que un QR normal, y el dibujo queda alrededor. Aun así, pruébalo con tu móvil antes de imprimir. Los enlaces cortos dan códigos más sencillos y fáciles de leer; si el tuyo es muy largo, elige «Sin dibujo» o acórtalo.</p>
+      </details>
+      <details>
+        <summary>¿Guardáis mi enlace?</summary>
+        <p>No. Todo se crea en tu navegador: el enlace que escribes no se envía ni se guarda en ningún servidor.</p>
+      </details>
+      <details>
+        <summary>¿Puedo usar los QR y los dibujos en mi negocio?</summary>
+        <p>Sí. Los códigos y dibujos que crees aquí son tuyos: puedes usarlos libremente, también con fines comerciales, sin citar la página. El código de esta herramienta es abierto (licencia MIT), así que también puedes copiarlo, adaptarlo y ponerlo en tu propia web.</p>
+      </details>
+      <details>
+        <summary>Aviso legal y privacidad</summary>
+        <p><b>Titular:</b> Marcos Hernández Párraga (contacto al final de la página). Es un proyecto personal y gratuito, sin publicidad ni ánimo de lucro.</p>
+        <p><b>Privacidad:</b> los códigos se crean en tu navegador. El enlace que escribes no se envía ni se guarda en ningún servidor, y esta página no usa cookies ni herramientas de analítica. El servicio donde esté alojada (por ejemplo, GitHub Pages) puede registrar la dirección IP de las visitas, según su propia política de privacidad.</p>
+        <p><b>Responsabilidad:</b> cada persona es responsable del contenido al que apunta su código QR. Comprueba siempre el enlace y prueba el código con tu móvil antes de imprimirlo o publicarlo.</p>
+        <p><b>Marcas:</b> «QR Code» es una marca registrada de DENSO WAVE INCORPORATED. Cualquier otro nombre citado pertenece a sus propietarios. Los dibujos son originales y genéricos, sin relación con marcas ni personajes de terceros.</p>
+      </details>
+      <details>
+        <summary>¿Quién ha hecho esta página?</summary>
+        <p>La ha hecho Marcos Hernández Párraga, estudiante de Medicina en la Universidad Rey Juan Carlos, para que cualquiera pueda crear sus códigos QR gratis y con un toque de gracia.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p class="who"><b>Hecho por Marcos Hernández Párraga</b></p>
+    <p>Estudiante de Medicina (URJC) · Delegado de la Titulación de Medicina · Delegado de la Facultad de Ciencias de la Salud · Presidente de la Orquesta Sinfónica de la URJC</p>
+    <p class="fine">Proyecto personal: no representa oficialmente a la Universidad Rey Juan Carlos ni a ninguna de sus asociaciones.</p>
+    <p>Contacto: <a id="mail" data-u="marcos.hernandezparraga" data-d="gmail.com" href="#"><noscript>marcos.hernandezparraga (arroba) gmail.com</noscript></a></p>
+    <p>Esta herramienta es libre: cualquier persona puede usarla gratis, para lo que necesite. Está hecha para las personas que la usan.</p>
+    <p>Código abierto bajo licencia MIT <a id="repo" href="#" rel="noopener" hidden>· Ver el código</a></p>
+    <small>Los códigos se crean en tu dispositivo. Esta página no usa cookies ni herramientas de seguimiento. «QR Code» es una marca registrada de DENSO WAVE INCORPORATED.</small>
+  </footer>
+</div>
+
+<script>/*LIB*/</script>
+<script>/*CORE*/</script>
+<script>/*APP*/</script>
